@@ -31,13 +31,29 @@ func (s *Scraper) ScrapeCities() []City {
 func (s *Scraper) ScrapeBeaches(city City) []Beach {
 	page := s.browser.MustPage(city.URL).MustWaitStable()
 	items := page.MustElement("body").MustEval(beachExtractor).Arr()
+	extraItems := page.MustElement("body").MustEval(beachExtraInfoExtractor).Arr()
 	beaches := make([]Beach, len(items))
 
+	cityNameHeader := extraItems[0].Str()
+	currentDateHeader := extraItems[1].Str()
+	samplingDatesHeader := extraItems[2].Str()
+
+	cityName := cityRE.FindStringSubmatch(cityNameHeader)[1]
+	currentDate := currentDateRE.FindStringSubmatch(currentDateHeader)[1]
+	samplingDates := samplingDatesRE.FindStringSubmatch(samplingDatesHeader)
+
 	for index, item := range items {
+		city.Name = cityName
+
 		beaches[index] = Beach{
 			City:   city,
 			Name:   item.Arr()[1].Str(),
 			Proper: item.Arr()[0].Bool(),
+			Sampling: Sampling{
+				CurrentDate: currentDate,
+				StartDate:   samplingDates[1],
+				EndDate:     samplingDates[2],
+			},
 		}
 	}
 
