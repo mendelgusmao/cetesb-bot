@@ -9,20 +9,6 @@ import (
 func New() *Scraper {
 	browser := rod.New().MustConnect()
 
-	// l := launcher.New().
-	// 	Headless(false).
-	// 	Devtools(true)
-
-	// url := l.MustLaunch()
-
-	// browser := rod.New().
-	// 	ControlURL(url).
-	// 	Trace(true).
-	// 	SlowMotion(2 * time.Second).
-	// 	MustConnect()
-
-	// launcher.Open(browser.ServeMonitor(""))
-
 	return &Scraper{browser: browser}
 }
 
