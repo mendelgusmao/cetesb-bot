@@ -7,7 +7,6 @@ import (
 
 	"github.com/mendelgusmao/cetesb-telegram-bot/scraper"
 	"github.com/mendelgusmao/scoredb/lib/database"
-	"github.com/mendelgusmao/scoredb/lib/fuzzymap"
 )
 
 func New(database *database.Database, scraper *scraper.Scraper) *Store {
@@ -53,6 +52,7 @@ func (s *Store) Scrape() (cities []database.Document, beaches []database.Documen
 			}
 
 			beaches = append(beaches, beachDocument)
+			break
 		}
 
 		cities[cityIndex] = database.Document{
@@ -60,6 +60,7 @@ func (s *Store) Scrape() (cities []database.Document, beaches []database.Documen
 			ExactKeys: []string{city.Name},
 			Content:   scrapedBeaches,
 		}
+		break
 	}
 
 	return
@@ -81,8 +82,17 @@ func (s *Store) Store(collection string, documents []database.Document) error {
 	return nil
 }
 
-func (s *Store) Query(collection string, key string) ([]fuzzymap.Match[any], error) {
-	return s.database.Query(collection, key)
+func (s *Store) Query(key string) (QueryResult, error) {
+	cityMatches, _ := s.database.Query("cities", key)
+	citiesQueryResult := newQueryResult("cities", cityMatches)
+
+	if citiesQueryResult.HasPerfectMatches {
+		return citiesQueryResult, nil
+	}
+
+	beachMatches, _ := s.database.Query("beaches", key)
+
+	return newQueryResult("beaches", beachMatches), nil
 }
 
 func (s *Store) StartUpdater() {
