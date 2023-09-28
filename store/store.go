@@ -52,7 +52,6 @@ func (s *Store) Scrape() (cities []database.Document, beaches []database.Documen
 			}
 
 			beaches = append(beaches, beachDocument)
-			break
 		}
 
 		cities[cityIndex] = database.Document{
@@ -60,7 +59,6 @@ func (s *Store) Scrape() (cities []database.Document, beaches []database.Documen
 			ExactKeys: []string{city.Name},
 			Content:   scrapedBeaches,
 		}
-		break
 	}
 
 	return
@@ -95,17 +93,19 @@ func (s *Store) Query(key string) (QueryResult, error) {
 	return newQueryResult("beaches", beachMatches), nil
 }
 
-func (s *Store) StartUpdater() {
+func (s *Store) Work() {
+	if err := s.ScrapeAndStore(); err != nil {
+		log.Printf("[store.Work (ticker)] %v", err)
+	}
+
 	ticker := time.NewTicker(1 * time.Hour)
 
 	go func() {
 		for {
 			select {
 			case <-ticker.C:
-				err := s.ScrapeAndStore()
-
-				if err != nil {
-					log.Printf("[store.StartUpdater] %v", err)
+				if err := s.ScrapeAndStore(); err != nil {
+					log.Printf("[store.Work (ticker)] %v", err)
 				}
 			}
 		}
