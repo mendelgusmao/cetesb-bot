@@ -2,10 +2,12 @@ package store
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/mendelgusmao/cetesb-telegram-bot/scraper"
 	"github.com/mendelgusmao/scoredb/lib/database"
+	"github.com/mendelgusmao/scoredb/lib/fuzzymap"
 )
 
 func New(database *database.Database, scraper *scraper.Scraper) *Store {
@@ -30,24 +32,27 @@ func (s *Store) Scrape() (cities []database.Document, beaches []database.Documen
 	cities = make([]database.Document, len(scrapedCities))
 	beaches = make([]database.Document, 0)
 
+	log.Printf("[store.Scrape] Found %d cities\n", len(scrapedCities))
+
 	for cityIndex, city := range scrapedCities {
+		log.Printf("[store.Scrape] Scraping %s beaches\n", city.Name)
+
 		scrapedBeaches := s.scraper.ScrapeBeaches(city)
+
+		log.Printf("[store.Scrape] Found %d beaches in %s\n", len(scrapedBeaches), city.Name)
 
 		for _, beach := range scrapedBeaches {
 			beachDocument := database.Document{
 				Keys: []string{
 					beach.Name,
-					fmt.Sprintf("%s %s", beach.City.Name, beach.Name),
 				},
 				ExactKeys: []string{
-					beach.Name,
+					fmt.Sprintf("%s %s", beach.City.Name, beach.Name),
 				},
 				Content: beach,
 			}
 
 			beaches = append(beaches, beachDocument)
-
-			break
 		}
 
 		cities[cityIndex] = database.Document{
@@ -55,8 +60,6 @@ func (s *Store) Scrape() (cities []database.Document, beaches []database.Documen
 			ExactKeys: []string{city.Name},
 			Content:   scrapedBeaches,
 		}
-
-		break
 	}
 
 	return
@@ -78,6 +81,10 @@ func (s *Store) Store(collection string, documents []database.Document) error {
 	return nil
 }
 
+func (s *Store) Query(collection string, key string) ([]fuzzymap.Match[any], error) {
+	return s.database.Query(collection, key)
+}
+
 func (s *Store) StartUpdater() {
 	ticker := time.NewTicker(1 * time.Hour)
 
@@ -88,7 +95,7 @@ func (s *Store) StartUpdater() {
 				err := s.ScrapeAndStore()
 
 				if err != nil {
-					fmt.Printf("[store.StartUpdater] %v", err)
+					log.Printf("[store.StartUpdater] %v", err)
 				}
 			}
 		}

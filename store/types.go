@@ -8,9 +8,9 @@ import (
 
 var databaseConfiguration = database.Configuration{
 	UseLevenshtein: true,
-	GramSizeLower:  3,
-	GramSizeUpper:  5,
-	MinScore:       50,
+	GramSizeLower:  2,
+	GramSizeUpper:  3,
+	MinScore:       0.5,
 	SetConfiguration: normalizer.SetConfiguration{
 		Synonyms: map[string]string{
 			"avenida": "av",
