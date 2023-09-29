@@ -42,6 +42,26 @@ func (f *Formatter) format() (messages []string) {
 		cityBeaches[beach.City.Name] = append(cityBeaches[beach.City.Name], beach)
 	}
 
+	if len(cityBeaches) > 1 {
+		lines := make([]string, 0)
+
+		for _, beaches := range cityBeaches {
+			for _, beach := range beaches {
+				line := fmt.Sprintf(
+					"%s A praia %s em %s está %s para banho!",
+					ProperEmojiMapping[beach.Quality],
+					strings.Title(strings.ToLower(beach.Name)),
+					strings.Title(strings.ToLower(beach.City.Name)),
+					strings.ToLower(beach.Quality),
+				)
+
+				lines = append(lines, line)
+			}
+		}
+
+		return append(messages, strings.Join(lines, "\n"))
+	}
+
 	for city, beaches := range cityBeaches {
 		lines := make([]string, 0)
 		manyBeachesFound := len(beaches) > 1
