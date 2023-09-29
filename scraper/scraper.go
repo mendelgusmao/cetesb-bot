@@ -1,8 +1,6 @@
 package scraper
 
 import (
-	"strings"
-
 	"github.com/go-rod/rod"
 )
 
@@ -12,54 +10,31 @@ func New() *Scraper {
 	return &Scraper{browser: browser}
 }
 
-func (s *Scraper) ScrapeCities() []City {
-	page := s.browser.MustPage(qualityMapURL).MustWaitStable()
-	items := page.MustElement("map").MustEval(citiesExtractor).Arr()
-	cities := make([]City, len(items))
+func (s *Scraper) Scrape() map[string][]Beach {
+	page := s.browser.MustPage(beachQualityURL).MustWaitStable()
+	extractedCityBeaches := page.MustElement("body").MustEval(beachExtractor).Map()
+	extractedSamplingDates := page.MustElement("body").MustEval(samplingDatesExtractor).Str()
+	samplingDates := samplingDatesRE.FindStringSubmatch(extractedSamplingDates)
 
-	for index, item := range items {
-		url := item.Str()
-		parts := strings.Split(url, "/")
-		name := strings.Replace(parts[len(parts)-1], ".phtml", "", -1)
+	cityBeaches := make(map[string][]Beach)
 
-		cities[index] = City{Name: name, URL: url}
-	}
+	for cityName, extractedBeaches := range extractedCityBeaches {
+		beaches := make([]Beach, len(extractedBeaches.Arr()))
 
-	return cities
-}
-
-func (s *Scraper) ScrapeBeaches(city City) []Beach {
-	page := s.browser.MustPage(city.URL).MustWaitStable()
-	items := page.MustElement("body").MustEval(beachExtractor).Arr()
-	extraItems := page.MustElement("body").MustEval(beachExtraInfoExtractor).Arr()
-	beaches := make([]Beach, len(items))
-
-	cityNameHeader := extraItems[0].Str()
-	currentDateHeader := extraItems[1].Str()
-	samplingDatesHeader := extraItems[2].Str()
-
-	cityName := cityRE.FindStringSubmatch(cityNameHeader)[1]
-	currentDate := currentDateRE.FindStringSubmatch(currentDateHeader)[1]
-	samplingDates := samplingDatesRE.FindStringSubmatch(samplingDatesHeader)
-
-	for index, item := range items {
-		city.Name = cityName
-
-		beaches[index] = Beach{
-			City:   City{Name: cityName, URL: city.URL},
-			Name:   item.Arr()[1].Str(),
-			Proper: item.Arr()[0].Bool(),
-			Sampling: Sampling{
-				CurrentDate: currentDate,
-				StartDate:   samplingDates[1],
-				EndDate:     samplingDates[2],
-			},
+		for index, extractedBeach := range extractedBeaches.Arr() {
+			beaches[index] = Beach{
+				City:    City{Name: cityName},
+				Name:    extractedBeach.Arr()[0].Str(),
+				Quality: extractedBeach.Arr()[2].Str(),
+				Sampling: Sampling{
+					StartDate: samplingDates[1],
+					EndDate:   samplingDates[2],
+				},
+			}
 		}
+
+		cityBeaches[cityName] = append(cityBeaches[cityName], beaches...)
 	}
 
-	return beaches
-}
-
-func (s *Scraper) Finish() {
-	s.browser.MustClose()
+	return cityBeaches
 }

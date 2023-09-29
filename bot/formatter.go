@@ -54,18 +54,18 @@ func (f *Formatter) format() (messages []string) {
 		for _, beach := range beaches {
 			line := fmt.Sprintf(
 				"%s A praia %s em %s está %s para banho!",
-				ProperEmojiMapping[beach.Proper],
+				ProperEmojiMapping[beach.Quality],
 				strings.Title(strings.ToLower(beach.Name)),
 				strings.Title(strings.ToLower(beach.City.Name)),
-				ProperTextMapping[beach.Proper],
+				strings.ToLower(beach.Quality),
 			)
 
 			if manyBeachesFound {
 				line = fmt.Sprintf(
 					"%s A praia %s está %s para banho!",
-					ProperEmojiMapping[beach.Proper],
+					ProperEmojiMapping[beach.Quality],
 					strings.Title(strings.ToLower(beach.Name)),
-					ProperTextMapping[beach.Proper],
+					strings.ToLower(beach.Quality),
 				)
 			}
 

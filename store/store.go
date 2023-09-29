@@ -17,7 +17,7 @@ func New(database *database.Database, scraper *scraper.Scraper) *Store {
 }
 
 func (s *Store) ScrapeAndStore() error {
-	cities, beaches := s.Scrape()
+	cities, beaches := s.ScrapeAndTransform()
 
 	if err := s.Store("cities", cities); err != nil {
 		return err
@@ -26,21 +26,13 @@ func (s *Store) ScrapeAndStore() error {
 	return s.Store("beaches", beaches)
 }
 
-func (s *Store) Scrape() (cities []database.Document, beaches []database.Document) {
-	scrapedCities := s.scraper.ScrapeCities()
-	cities = make([]database.Document, len(scrapedCities))
+func (s *Store) ScrapeAndTransform() (cities []database.Document, beaches []database.Document) {
+	scrapedCityBeaches := s.scraper.Scrape()
+	cities = make([]database.Document, 0)
 	beaches = make([]database.Document, 0)
 
-	log.Printf("[store.Scrape] Found %d cities\n", len(scrapedCities))
-
-	for cityIndex, city := range scrapedCities {
-		log.Printf("[store.Scrape] Scraping %s beaches\n", city.Name)
-
-		scrapedBeaches := s.scraper.ScrapeBeaches(city)
-
-		log.Printf("[store.Scrape] Found %d beaches in %s\n", len(scrapedBeaches), city.Name)
-
-		for _, beach := range scrapedBeaches {
+	for cityName, cityBeaches := range scrapedCityBeaches {
+		for _, beach := range cityBeaches {
 			beachDocument := database.Document{
 				Keys: []string{
 					beach.Name,
@@ -55,13 +47,15 @@ func (s *Store) Scrape() (cities []database.Document, beaches []database.Documen
 			beaches = append(beaches, beachDocument)
 		}
 
-		cityName := scrapedBeaches[0].City.Name
-		cities[cityIndex] = database.Document{
+		cities = append(cities, database.Document{
 			Keys:      []string{cityName},
 			ExactKeys: []string{cityName},
-			Content:   scrapedBeaches,
-		}
+			Content:   cityBeaches,
+		})
 	}
+
+	log.Printf("[store.Scrape] Found %d cities\n", len(scrapedCityBeaches))
+	log.Printf("[store.Scrape] Found %d beaches\n", len(beaches))
 
 	return
 }

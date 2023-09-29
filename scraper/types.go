@@ -7,59 +7,53 @@ import (
 )
 
 const (
-	qualityMapURL = "https://qualipraia.cetesb.sp.gov.br/qualidade-da-praia/mapa.php"
+	beachQualityURL = "https://qualipraia.cetesb.sp.gov.br/qualidade-da-praia/"
 
-	citiesExtractor = `
-		() => [...this.querySelectorAll("area")].map(area => area.href)
-	`
 	beachExtractor = `
 		() => {
-			const tableSelector = 'table[width="550"]:not([bgcolor]) > tbody';
-			const table = this.querySelector(tableSelector);
+			const elements = [...this.querySelectorAll('h2, table')];
 
-			return [...table.querySelectorAll("tr")].map(
-				tr => [...tr.querySelectorAll("td")].map(
-					td => /good/.test(td.innerHTML) || td.innerText || false
-				)
-			).map(
-				it => [it.slice(0, 2), it.slice(3, 5)]
-			)
-			.flat()
-			.filter(it => it.length);
+			return elements.reduce(
+				(cityBeaches, el, index) => {
+					if (el.tagName === "TABLE") {
+						const cityName = elements[index - 1].innerText.trim();
+						const beaches = [...el.querySelectorAll("tbody > tr")].slice(1).map(
+							tr => [...tr.querySelectorAll("td")].map(td => td.innerText.trim())
+						)
+			
+						return {...cityBeaches, [cityName]: beaches};
+					}
+			
+					return cityBeaches;
+				},
+				{},
+			);
 		}
 	`
-	beachExtraInfoExtractor = `
-		() => {
-			const header = this.querySelector('table[width="550"][bgcolor] > tbody > tr > td').innerText.split("\n");
-			const footer = this.querySelector('table[width="560"] > tbody > tr > td[style]').innerText;
-
-			return [...header, footer];
-		}
+	samplingDatesExtractor = `
+		() => this.querySelector("h3").innerText.trim();
 	`
 )
 
 var (
 	cityRE          = regexp.MustCompile(`Município de (.*)`)
-	currentDateRE   = regexp.MustCompile(`Data: (.*)`)
-	samplingDatesRE = regexp.MustCompile(`Período de Amostragem: ([^\s]+) - ([^\s]+)`)
+	samplingDatesRE = regexp.MustCompile(`De ([^\s]+) até ([^\s]+)`)
 )
 
 type Sampling struct {
-	CurrentDate string
-	StartDate   string
-	EndDate     string
+	StartDate string
+	EndDate   string
 }
 
 type City struct {
 	Name string
-	URL  string
 }
 
 type Beach struct {
 	City
 	Sampling
-	Name   string
-	Proper bool
+	Name    string
+	Quality string
 }
 
 type Scraper struct {

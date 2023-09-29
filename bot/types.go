@@ -15,13 +15,9 @@ const (
 )
 
 var (
-	ProperEmojiMapping = map[bool]string{
-		true:  "\U0001F7E2",
-		false: "\U0001F534",
-	}
-	ProperTextMapping = map[bool]string{
-		true:  "própria",
-		false: "imprópria",
+	ProperEmojiMapping = map[string]string{
+		"Própria":   "\U0001F7E2",
+		"Imprópria": "\U0001F534",
 	}
 )
 
