@@ -44,6 +44,7 @@ func (s *Store) Scrape() (cities []database.Document, beaches []database.Documen
 			beachDocument := database.Document{
 				Keys: []string{
 					beach.Name,
+					fmt.Sprintf("%s %s", beach.Name, beach.City.Name),
 				},
 				ExactKeys: []string{
 					fmt.Sprintf("%s %s", beach.City.Name, beach.Name),
@@ -54,9 +55,10 @@ func (s *Store) Scrape() (cities []database.Document, beaches []database.Documen
 			beaches = append(beaches, beachDocument)
 		}
 
+		cityName := scrapedBeaches[0].City.Name
 		cities[cityIndex] = database.Document{
-			Keys:      []string{city.Name},
-			ExactKeys: []string{city.Name},
+			Keys:      []string{cityName},
+			ExactKeys: []string{cityName},
 			Content:   scrapedBeaches,
 		}
 	}

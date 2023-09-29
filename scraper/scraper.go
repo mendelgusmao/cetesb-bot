@@ -46,7 +46,7 @@ func (s *Scraper) ScrapeBeaches(city City) []Beach {
 		city.Name = cityName
 
 		beaches[index] = Beach{
-			City:   city,
+			City:   City{Name: cityName, URL: city.URL},
 			Name:   item.Arr()[1].Str(),
 			Proper: item.Arr()[0].Bool(),
 			Sampling: Sampling{
