@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"fmt"
 	"log"
 
 	telegram "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -34,6 +35,12 @@ func (b *Bot) handleUpdate(update telegram.Update) {
 	if update.Message != nil {
 		query := update.Message.Text
 		log.Printf("@%s: %s", update.Message.From.UserName, query)
+
+		if query == "/start" {
+			msg := telegram.NewMessage(update.Message.Chat.ID, fmt.Sprintf(startMessage, update.Message.From.FirstName))
+			b.telegram.Send(msg)
+			return
+		}
 
 		result, err := b.store.Query(query)
 
