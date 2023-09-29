@@ -5,7 +5,14 @@ import (
 	"github.com/mendelgusmao/cetesb-telegram-bot/store"
 )
 
-const unknownErrorMessage = "Ocorreu um erro na consulta. Tente novamente mais tarde."
+const (
+	unknownErrorMessage = "Ocorreu um erro na consulta. Tente novamente mais tarde."
+	notFoundMessage     = "Não encontrei informações sobre %s. Modifique sua consulta e tente novamente."
+	maxResultsMessage   = "Encontrei muitas praias e vou te mandar informações de %d delas. " +
+		"Caso não encontre a que quer, tente fazer uma consulta mais específica."
+	cityHeaderMessage = "Encontrei informações das seguintes praias da cidade de %s:"
+	maxResults        = 5
+)
 
 var (
 	ProperEmojiMapping = map[bool]string{

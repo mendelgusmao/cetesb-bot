@@ -1,9 +1,7 @@
 package bot
 
 import (
-	"fmt"
 	"log"
-	"strings"
 
 	telegram "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/mendelgusmao/cetesb-telegram-bot/store"
@@ -27,32 +25,29 @@ func (b *Bot) Work() {
 		updates := b.telegram.GetUpdatesChan(u)
 
 		for update := range updates {
-			if update.Message != nil {
-				log.Printf("@%s: %s", update.Message.From.UserName, update.Message.Text)
-
-				result, err := b.store.Query(update.Message.Text)
-
-				if err != nil {
-					log.Printf("[ERROR] @%s: %s => %v", update.Message.From.UserName, update.Message.Text, err)
-					msg := telegram.NewMessage(update.Message.Chat.ID, unknownErrorMessage)
-					b.telegram.Send(msg)
-				}
-
-				lines := make([]string, len(result.Beaches))
-
-				for index, result := range result.Beaches {
-					lines[index] = fmt.Sprintf(
-						"%s A praia %s na cidade de %s está %s para banho!",
-						ProperEmojiMapping[result.Proper],
-						strings.Title(strings.ToLower(result.Name)),
-						strings.Title(result.City.Name),
-						ProperTextMapping[result.Proper],
-					)
-				}
-
-				msg := telegram.NewMessage(update.Message.Chat.ID, strings.Join(lines, "\n"))
-				b.telegram.Send(msg)
-			}
+			b.handleUpdate(update)
 		}
 	}()
+}
+
+func (b *Bot) handleUpdate(update telegram.Update) {
+	if update.Message != nil {
+		query := update.Message.Text
+		log.Printf("@%s: %s", update.Message.From.UserName, query)
+
+		result, err := b.store.Query(query)
+
+		if err != nil {
+			log.Printf("[ERROR] @%s: %s => %v", update.Message.From.UserName, query, err)
+			msg := telegram.NewMessage(update.Message.Chat.ID, unknownErrorMessage)
+			b.telegram.Send(msg)
+		}
+
+		formatter := NewFormatter(query, result)
+
+		for _, message := range formatter.format() {
+			msg := telegram.NewMessage(update.Message.Chat.ID, message)
+			b.telegram.Send(msg)
+		}
+	}
 }
