@@ -34,7 +34,7 @@ func (b *Bot) Work() {
 func (b *Bot) handleUpdate(update telegram.Update) {
 	if update.Message != nil {
 		query := update.Message.Text
-		log.Printf("@%s: %s", update.Message.From.UserName, query)
+		log.Printf("[bot.handleUpdate] @%s: %s", update.Message.From.UserName, query)
 
 		if query == "/start" {
 			msg := telegram.NewMessage(update.Message.Chat.ID, fmt.Sprintf(startMessage, update.Message.From.FirstName))
@@ -45,7 +45,7 @@ func (b *Bot) handleUpdate(update telegram.Update) {
 		result, err := b.store.Query(query)
 
 		if err != nil {
-			log.Printf("[ERROR] @%s: %s => %v", update.Message.From.UserName, query, err)
+			log.Printf("[bot.handleUpdate] @%s: %s => %v", update.Message.From.UserName, query, err)
 			msg := telegram.NewMessage(update.Message.Chat.ID, unknownErrorMessage)
 			b.telegram.Send(msg)
 		}
