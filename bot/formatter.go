@@ -25,6 +25,7 @@ func (f *Formatter) format() (messages []string) {
 
 	if len(f.result.Beaches) == 0 {
 		messages = append(messages, fmt.Sprintf(notFoundMessage, f.query))
+		return
 	}
 
 	if len(f.result.Beaches) > maxResults {
@@ -33,6 +34,7 @@ func (f *Formatter) format() (messages []string) {
 	}
 
 	cityBeaches := make(map[string][]scraper.Beach)
+	samplingPeriod := f.result.Beaches[0].Sampling
 
 	for _, beach := range f.result.Beaches {
 		if _, ok := cityBeaches[beach.City.Name]; !ok {
@@ -59,6 +61,9 @@ func (f *Formatter) format() (messages []string) {
 			}
 		}
 
+		lines = append(lines, "")
+		lines = append(lines, fmt.Sprintf(samplingPeriodMessage, samplingPeriod.StartDate, samplingPeriod.EndDate))
+
 		return append(messages, strings.Join(lines, "\n"))
 	}
 
@@ -72,13 +77,7 @@ func (f *Formatter) format() (messages []string) {
 		}
 
 		for _, beach := range beaches {
-			line := fmt.Sprintf(
-				"%s A praia %s em %s está %s para banho!",
-				ProperEmojiMapping[beach.Quality],
-				strings.Title(strings.ToLower(beach.Name)),
-				strings.Title(strings.ToLower(beach.City.Name)),
-				strings.ToLower(beach.Quality),
-			)
+			var line string
 
 			if manyBeachesFound {
 				line = fmt.Sprintf(
@@ -87,10 +86,21 @@ func (f *Formatter) format() (messages []string) {
 					strings.Title(strings.ToLower(beach.Name)),
 					strings.ToLower(beach.Quality),
 				)
+			} else {
+				line = fmt.Sprintf(
+					"%s A praia %s em %s está %s para banho!",
+					ProperEmojiMapping[beach.Quality],
+					strings.Title(strings.ToLower(beach.Name)),
+					strings.Title(strings.ToLower(beach.City.Name)),
+					strings.ToLower(beach.Quality),
+				)
 			}
 
 			lines = append(lines, line)
 		}
+
+		lines = append(lines, "")
+		lines = append(lines, fmt.Sprintf(samplingPeriodMessage, samplingPeriod.StartDate, samplingPeriod.EndDate))
 
 		messages = append(messages, strings.Join(lines, "\n"))
 	}
