@@ -8,7 +8,7 @@ import (
 const (
 	unknownErrorMessage = "Ocorreu um erro na consulta. Tente novamente mais tarde."
 	notFoundMessage     = "Não encontrei informações sobre %s. Modifique sua consulta e tente novamente."
-	maxResultsMessage   = "Encontrei muitas praias e vou te mandar informações de %d delas. " +
+	maxResultsMessage   = "Encontrei muitas praias e vou te mandar informações de algumas delas. " +
 		"Caso não encontre a que quer, tente fazer uma consulta mais específica."
 	cityHeaderMessage = "Encontrei informações das seguintes praias da cidade de %s:"
 	startMessage      = "Olá, %s! Eu sou o CETESB Praia bot, um bot não oficial que usa dados da CETESB para te informar sobre a qualidade da água das praias do litoral paulista.\n\n" +
