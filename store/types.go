@@ -21,6 +21,7 @@ var databaseConfiguration = database.Configuration{
 }
 
 type Store struct {
-	database *database.Database
-	scraper  *scraper.Scraper
+	database     *database.Database
+	scraper      *scraper.Scraper
+	lastChecksum uint32
 }

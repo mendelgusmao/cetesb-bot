@@ -2,6 +2,7 @@ package store
 
 import (
 	"fmt"
+	"hash/crc32"
 	"log"
 	"time"
 
@@ -30,6 +31,14 @@ func (s *Store) ScrapeAndTransform() (cities []database.Document, beaches []data
 	scrapedCityBeaches := s.scraper.Scrape()
 	cities = make([]database.Document, 0)
 	beaches = make([]database.Document, 0)
+
+	checksum := crc32.ChecksumIEEE([]byte(fmt.Sprintf("%v|%v", cities, beaches)))
+
+	if checksum == s.lastChecksum {
+		return
+	}
+
+	log.Println("[store.Scrape] Change detected! Going to update the database.")
 
 	for cityName, cityBeaches := range scrapedCityBeaches {
 		for _, beach := range cityBeaches {
