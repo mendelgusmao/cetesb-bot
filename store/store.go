@@ -38,6 +38,7 @@ func (s *Store) ScrapeAndTransform() (cities []database.Document, beaches []data
 		return
 	}
 
+	s.lastChecksum = checksum
 	log.Println("[store.Scrape] Change detected! Going to update the database.")
 
 	for cityName, cityBeaches := range scrapedCityBeaches {
