@@ -20,11 +20,11 @@ func New(database *database.Database, scraper *scraper.Scraper) *Store {
 func (s *Store) ScrapeAndStore() error {
 	cities, beaches := s.ScrapeAndTransform()
 
-	if err := s.database.CreateCollection("cities", databaseConfiguration, cities); err != nil {
+	if err := s.Store("cities", cities); err != nil {
 		return err
 	}
 
-	return s.database.CreateCollection("beaches", databaseConfiguration, beaches)
+	return s.Store("beaches", beaches)
 }
 
 func (s *Store) ScrapeAndTransform() (cities []database.Document, beaches []database.Document) {
@@ -70,6 +70,22 @@ func (s *Store) ScrapeAndTransform() (cities []database.Document, beaches []data
 	return
 }
 
+func (s *Store) Store(collection string, documents []database.Document) error {
+	var err error
+
+	if !s.database.CollectionExists(collection) {
+		err = s.database.CreateCollection(collection, databaseConfiguration, documents)
+	} else {
+		err = s.database.UpdateCollection(collection, documents)
+	}
+
+	if err != nil {
+		return fmt.Errorf("[store.Store] %v", err)
+	}
+
+	return nil
+}
+
 func (s *Store) Query(key string) (QueryResult, error) {
 	cityMatches, _ := s.database.Query("cities", key)
 	citiesQueryResult := newQueryResult("cities", cityMatches)
@@ -85,7 +101,7 @@ func (s *Store) Query(key string) (QueryResult, error) {
 
 func (s *Store) Work() {
 	if err := s.ScrapeAndStore(); err != nil {
-		log.Printf("[store.Work] %v", err)
+		log.Printf("[store.Work (ticker)] %v", err)
 	}
 
 	ticker := time.NewTicker(1 * time.Hour)
