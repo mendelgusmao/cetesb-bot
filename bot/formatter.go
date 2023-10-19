@@ -2,6 +2,7 @@ package bot
 
 import (
 	"fmt"
+	"math/rand"
 	"strings"
 
 	"github.com/mendelgusmao/cetesb-telegram-bot/scraper"
@@ -29,8 +30,14 @@ func (f *Formatter) format() (messages []string) {
 	}
 
 	if len(f.result.Beaches) > maxResults {
-		messages = append(messages, fmt.Sprintf(maxResultsMessage, maxResults))
-		f.result.Beaches = f.result.Beaches[0:maxResults]
+		beaches := f.result.Beaches
+
+		rand.Shuffle(len(beaches), func(a, b int) {
+			beaches[a], beaches[b] = beaches[b], beaches[a]
+		})
+
+		f.result.Beaches = beaches[0:maxResults]
+		messages = append(messages, maxResultsMessage)
 	}
 
 	cityBeaches := make(map[string][]scraper.Beach)
