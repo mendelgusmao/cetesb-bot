@@ -15,7 +15,9 @@ var databaseConfiguration = database.Configuration{
 		Synonyms: map[string]string{
 			"avenida": "av",
 		},
-		StopWords:     []string{"de"},
+		StopWords: []string{
+			"de",
+		},
 		Transliterate: true,
 	},
 }
