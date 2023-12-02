@@ -25,6 +25,7 @@ var databaseConfiguration = database.Configuration{
 			"r",
 			"rua",
 			"m",
+			"carlota",
 		},
 		Transliterate: true,
 	},
