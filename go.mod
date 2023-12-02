@@ -4,11 +4,11 @@ go 1.21.1
 
 require (
 	github.com/go-rod/rod v0.114.3
+	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/mendelgusmao/scoredb v0.0.3-beta
 )
 
 require (
-	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1 // indirect
 	github.com/orcaman/concurrent-map/v2 v2.0.0 // indirect
 	github.com/samprakos/gofuzzyset v0.0.0-20190220175048-da9561973d4a // indirect
 	github.com/ysmood/fetchup v0.2.3 // indirect
