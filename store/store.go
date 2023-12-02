@@ -17,14 +17,22 @@ func New(database *database.Database, scraper *scraper.Scraper) *Store {
 	}
 }
 
+func (s *Store) CreateOrUpdateCollection(collectionName string, config database.Configuration, documents []database.Document) error {
+	if s.database.CollectionExists(collectionName) {
+		return s.database.UpdateCollection(collectionName, documents)
+	}
+
+	return s.database.CreateCollection(collectionName, config, documents)
+}
+
 func (s *Store) ScrapeAndStore() error {
 	cities, beaches := s.ScrapeAndTransform()
 
-	if err := s.Store("cities", cities); err != nil {
+	if err := s.CreateOrUpdateCollection("cities", databaseConfiguration, cities); err != nil {
 		return err
 	}
 
-	return s.Store("beaches", beaches)
+	return s.CreateOrUpdateCollection("beaches", databaseConfiguration, beaches)
 }
 
 func (s *Store) ScrapeAndTransform() (cities []database.Document, beaches []database.Document) {
