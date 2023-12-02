@@ -13,10 +13,18 @@ var databaseConfiguration = database.Configuration{
 	MinScore:       0.5,
 	SetConfiguration: normalizer.SetConfiguration{
 		Synonyms: map[string]string{
-			"avenida": "av",
+			"avenida":       "av",
+			"Caraguatatuba": "caragua",
 		},
 		StopWords: []string{
 			"de",
+			"da",
+			"do",
+			"das",
+			"dos",
+			"r",
+			"rua",
+			"m",
 		},
 		Transliterate: true,
 	},
