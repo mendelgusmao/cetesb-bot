@@ -39,13 +39,14 @@ func hasPerfectMatches(matches []fuzzymap.Match[any]) bool {
 		return false
 	}
 
-	perfects := 0
+	hasPerfects := false
 
 	for _, match := range matches {
 		if match.Score == 100 {
-			perfects += 1
+			hasPerfects = true
+			break
 		}
 	}
 
-	return perfects > 0
+	return hasPerfects
 }
