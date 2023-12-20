@@ -15,6 +15,7 @@ func (s *Scraper) Scrape() map[string][]Beach {
 	extractedCityBeaches := page.MustElement("body").MustEval(beachExtractor).Map()
 	extractedSamplingDates := page.MustElement("body").MustEval(samplingDatesExtractor).Str()
 	samplingDates := samplingDatesRE.FindStringSubmatch(extractedSamplingDates)
+	page.MustClose()
 
 	cityBeaches := make(map[string][]Beach)
 
