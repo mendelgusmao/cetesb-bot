@@ -6,23 +6,33 @@ import (
 	"log"
 	"time"
 
+	"github.com/mendelgusmao/cetesb-telegram-bot/persistence"
 	"github.com/mendelgusmao/cetesb-telegram-bot/scraper"
 	"github.com/mendelgusmao/scoredb/lib/database"
 )
 
-func New(database *database.Database, scraper *scraper.Scraper) *Store {
+func New(
+	persistence *persistence.Persistence,
+	memory *database.Database,
+	scraper *scraper.Scraper,
+) *Store {
 	return &Store{
-		database: database,
-		scraper:  scraper,
+		persistence: persistence,
+		memory:      memory,
+		scraper:     scraper,
 	}
 }
 
-func (s *Store) CreateOrUpdateCollection(collectionName string, config database.Configuration, documents []database.Document) error {
-	if s.database.CollectionExists(collectionName) {
-		return s.database.UpdateCollection(collectionName, documents)
+func (s *Store) CreateOrUpdateCollection(
+	collectionName string,
+	config database.Configuration,
+	documents []database.Document,
+) error {
+	if s.memory.CollectionExists(collectionName) {
+		return s.memory.UpdateCollection(collectionName, documents)
 	}
 
-	return s.database.CreateCollection(collectionName, config, documents)
+	return s.memory.CreateCollection(collectionName, config, documents)
 }
 
 func (s *Store) ScrapeAndStore() error {
@@ -81,10 +91,10 @@ func (s *Store) ScrapeAndTransform() (cities []database.Document, beaches []data
 func (s *Store) Store(collection string, documents []database.Document) error {
 	var err error
 
-	if !s.database.CollectionExists(collection) {
-		err = s.database.CreateCollection(collection, databaseConfiguration, documents)
+	if !s.memory.CollectionExists(collection) {
+		err = s.memory.CreateCollection(collection, databaseConfiguration, documents)
 	} else {
-		err = s.database.UpdateCollection(collection, documents)
+		err = s.memory.UpdateCollection(collection, documents)
 	}
 
 	if err != nil {
@@ -95,14 +105,14 @@ func (s *Store) Store(collection string, documents []database.Document) error {
 }
 
 func (s *Store) Query(key string) (QueryResult, error) {
-	cityMatches, _ := s.database.Query("cities", key)
+	cityMatches, _ := s.memory.Query("cities", key)
 	citiesQueryResult := newQueryResult("cities", cityMatches)
 
 	if citiesQueryResult.HasPerfectMatches {
 		return citiesQueryResult, nil
 	}
 
-	beachMatches, _ := s.database.Query("beaches", key)
+	beachMatches, _ := s.memory.Query("beaches", key)
 
 	return newQueryResult("beaches", beachMatches), nil
 }

@@ -1,6 +1,7 @@
 package store
 
 import (
+	"github.com/mendelgusmao/cetesb-telegram-bot/persistence"
 	"github.com/mendelgusmao/cetesb-telegram-bot/scraper"
 	"github.com/mendelgusmao/scoredb/lib/database"
 	"github.com/mendelgusmao/scoredb/lib/fuzzymap/normalizer"
@@ -32,7 +33,8 @@ var databaseConfiguration = database.Configuration{
 }
 
 type Store struct {
-	database     *database.Database
+	persistence  *persistence.Persistence
+	memory       *database.Database
 	scraper      *scraper.Scraper
 	lastChecksum uint32
 }
