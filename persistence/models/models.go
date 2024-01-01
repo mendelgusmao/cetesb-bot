@@ -1,8 +1,8 @@
-package persistence
+package models
 
 import "gorm.io/gorm"
 
-var models = []any{
+var Models = []any{
 	Beach{},
 }
 

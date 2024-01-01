@@ -3,20 +3,21 @@ package persistence
 import (
 	"fmt"
 
+	"github.com/mendelgusmao/cetesb-telegram-bot/persistence/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 type Persistence struct {
-	path     string
-	models   []any
-	database *gorm.DB
+	*gorm.DB
+	path   string
+	models []any
 }
 
 func NewPersistence(path string) *Persistence {
 	return &Persistence{
 		path:   path,
-		models: models,
+		models: models.Models,
 	}
 }
 
@@ -33,13 +34,7 @@ func (d *Persistence) Init() error {
 		}
 	}
 
-	d.database = db
+	d.DB = db
 
 	return nil
-}
-
-func (d *Persistence) CreateOrUpdateBeach(beach Beach) error {
-	var tmpBeach Beach
-
-	d.database.First(&tmpBeach, "city = ? AND name = ?", beach.City, beach.Name)
 }
