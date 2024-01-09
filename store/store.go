@@ -47,8 +47,6 @@ func (s *Store) ScrapeAndTransform() (cities []database.Document, beaches []data
 				Keys: []string{
 					beach.Name,
 					fmt.Sprintf("%s %s", beach.Name, beach.City.Name),
-				},
-				ExactKeys: []string{
 					fmt.Sprintf("%s %s", beach.City.Name, beach.Name),
 				},
 				Content: beach,
@@ -58,9 +56,8 @@ func (s *Store) ScrapeAndTransform() (cities []database.Document, beaches []data
 		}
 
 		cities = append(cities, database.Document{
-			Keys:      []string{cityName},
-			ExactKeys: []string{cityName},
-			Content:   cityBeaches,
+			Keys:    []string{cityName},
+			Content: cityBeaches,
 		})
 	}
 
