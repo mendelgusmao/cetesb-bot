@@ -1,6 +1,8 @@
 package scraper
 
 import (
+	"fmt"
+
 	"github.com/go-rod/rod"
 )
 
