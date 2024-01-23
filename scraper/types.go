@@ -36,7 +36,6 @@ const (
 )
 
 var (
-	cityRE          = regexp.MustCompile(`Município de (.*)`)
 	samplingDatesRE = regexp.MustCompile(`De ([^\s]+) até ([^\s]+)`)
 )
 

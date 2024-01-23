@@ -10,14 +10,20 @@ func New() *Scraper {
 	return &Scraper{browser: browser}
 }
 
-func (s *Scraper) Scrape() map[string][]Beach {
+func (s *Scraper) Scrape() (cityBeaches map[string][]Beach, e error) {
+	cityBeaches = make(map[string][]Beach)
+
+	defer func() {
+		if err := recover(); err != nil {
+			e = fmt.Errorf("Scraper.Scrape: %v", err)
+		}
+	}()
+
 	page := s.browser.MustPage(beachQualityURL).MustWaitStable()
 	extractedCityBeaches := page.MustElement("body").MustEval(beachExtractor).Map()
 	extractedSamplingDates := page.MustElement("body").MustEval(samplingDatesExtractor).Str()
 	samplingDates := samplingDatesRE.FindStringSubmatch(extractedSamplingDates)
 	page.MustClose()
-
-	cityBeaches := make(map[string][]Beach)
 
 	for cityName, extractedBeaches := range extractedCityBeaches {
 		beaches := make([]Beach, len(extractedBeaches.Arr()))
@@ -37,5 +43,5 @@ func (s *Scraper) Scrape() map[string][]Beach {
 		cityBeaches[cityName] = append(cityBeaches[cityName], beaches...)
 	}
 
-	return cityBeaches
+	return cityBeaches, nil
 }

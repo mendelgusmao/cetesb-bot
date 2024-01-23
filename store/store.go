@@ -18,7 +18,11 @@ func New(database *database.Database, scraper *scraper.Scraper) *Store {
 }
 
 func (s *Store) ScrapeAndStore() error {
-	cities, beaches := s.ScrapeAndTransform()
+	cities, beaches, err := s.ScrapeAndTransform()
+
+	if err != nil {
+		return fmt.Errorf("Store.ScrapeAndStore: %v", err)
+	}
 
 	if err := s.Store("cities", cities); err != nil {
 		return err
@@ -27,8 +31,13 @@ func (s *Store) ScrapeAndStore() error {
 	return s.Store("beaches", beaches)
 }
 
-func (s *Store) ScrapeAndTransform() (cities []database.Document, beaches []database.Document) {
-	scrapedCityBeaches := s.scraper.Scrape()
+func (s *Store) ScrapeAndTransform() (cities []database.Document, beaches []database.Document, err error) {
+	scrapedCityBeaches, err := s.scraper.Scrape()
+
+	if err != nil {
+		return nil, nil, fmt.Errorf("Store.ScrapeAndTransform: %v", err)
+	}
+
 	cities = make([]database.Document, 0)
 	beaches = make([]database.Document, 0)
 
@@ -98,18 +107,15 @@ func (s *Store) Query(key string) (QueryResult, error) {
 
 func (s *Store) Work() {
 	if err := s.ScrapeAndStore(); err != nil {
-		log.Printf("[store.Work (ticker)] %v", err)
+		log.Printf("[store.Work] %v", err)
 	}
 
 	ticker := time.NewTicker(1 * time.Hour)
 
 	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				if err := s.ScrapeAndStore(); err != nil {
-					log.Printf("[store.Work (ticker)] %v", err)
-				}
+		for range ticker.C {
+			if err := s.ScrapeAndStore(); err != nil {
+				log.Printf("[store.Work (ticker)] %v", err)
 			}
 		}
 	}()
